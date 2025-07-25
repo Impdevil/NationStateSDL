@@ -1,0 +1,839 @@
+source/StateManager.h:
+
+#ifndef StateManager_h
+#define StateManager_h
+#pragma once
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+
+#include "MainGameLoop.h"
+#include "CameraSystem.h"
+
+enum GameState
+{
+    GAME_STATE_MENU,
+    GAME_STATE_PLAYING,
+    GAME_STATE_PAUSED,
+    GAME_STATE_GAME_OVER,
+};
+
+class GameStateManager
+{
+public:
+    GameStateManager() : currentState(GAME_STATE_MENU) {}
+    void setState(GameState newState);
+    GameState getState() const;
+
+    void moveToState(GameState newState, SDL_Renderer *renderer);
+    void gameLoop(float deltaTime);
+    void render(SDL_Renderer *renderer);
+private:
+    GameState currentState;
+};
+
+class StateManager
+{
+private:
+    static StateManager *instance;
+    GameStateManager gameStateManager;
+    CamStruct camera; // Camera for rendering
+
+    StateManager() {
+        gameStateManager = GameStateManager();
+        camera = CamStruct(0, 0, 800, 600, 1.0f); // Initialize camera with default values
+        
+    } // Initialize camera with default values
+
+    void destroyInstance();
+public:
+
+    static StateManager *getInstance();
+    GameStateManager *getGameStateManager();
+    CamStruct *getCamera();
+};
+
+#endif // GameStateManager_h
+
+source/StateManager.cpp:
+
+#include "StateManager.h"
+
+#pragma region GameStateManager Implementation
+
+void GameStateManager::setState(GameState newState)
+{
+    currentState = newState;
+}
+GameState GameStateManager::getState() const
+{
+    return currentState;
+}
+
+void GameStateManager::moveToState(GameState newState, SDL_Renderer *renderer)
+{
+    // Handle any necessary transitions between states
+    currentState = newState;
+    switch (currentState)
+    {
+    case GameState::GAME_STATE_MENU:
+        // Initialize menu state
+
+        break;
+    case GAME_STATE_PLAYING:
+        // Initialize playing state
+        MainGameLoop::initGame(renderer);
+        break;
+    case GAME_STATE_PAUSED:
+        // Initialize paused state
+        break;
+    case GAME_STATE_GAME_OVER:
+        // Initialize game over state
+        break;
+    }
+}
+void GameStateManager::gameLoop(float deltaTime)
+{
+    // Main game loop logic based on the current state
+    switch (currentState)
+    {
+    case GAME_STATE_MENU:
+        // Handle menu logic
+        break;
+    case GAME_STATE_PLAYING:
+        MainGameLoop::MainGameLoop(deltaTime); // Call the main game loop logic
+        break;
+    case GAME_STATE_PAUSED:
+        // Handle paused logic
+        break;
+    case GAME_STATE_GAME_OVER:
+        // Handle game over logic
+        break;
+    }
+}
+
+void GameStateManager::render(SDL_Renderer *renderer)
+{
+    // Render based on the current state
+    switch (currentState)
+    {
+    case GAME_STATE_MENU:
+        // Render menu
+        break;
+    case GAME_STATE_PLAYING:
+        MainGameLoop::RenderGameWorld(renderer);
+        break;
+    case GAME_STATE_PAUSED:
+        // Render pause screen
+        break;
+    case GAME_STATE_GAME_OVER:
+        // Render game over screen
+        break;
+    }
+}
+
+#pragma endregion GameStateManager Implementation
+
+#pragma region  StateManager Implementation
+
+
+    StateManager* StateManager::instance = nullptr;
+
+StateManager *StateManager::getInstance()
+{
+    if (!instance)
+    {
+        instance = new StateManager();
+    }
+    return instance;
+}
+void StateManager::destroyInstance()
+{
+    if (instance)
+    {
+        delete instance;
+        instance = nullptr;
+    }
+}
+GameStateManager *StateManager::getGameStateManager()
+{
+    return &gameStateManager;
+}
+CamStruct *StateManager::getCamera()
+{
+    return &camera;
+}
+
+#pragma endregion StateManager Implementation
+
+source/MainGameLoop.h:
+
+#ifndef MainGameLoop_H
+#define MainGameLoop_H
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include "ChunkManager.h"
+
+#include <unordered_map>
+#include <memory>
+#include "BaseObjects.h"
+
+
+namespace MainGameLoop
+{
+    ChunkManager chunkManager;
+    int initGame(SDL_Renderer *renderer);
+    int MainGameLoop(float deltaTime);
+    void RenderGameWorld(SDL_Renderer *renderer);
+}
+
+#endif // MainGameLoop_h
+
+
+source/MainGameLoop.cpp:
+
+#include "MainGameLoop.h"
+//#include "TileMap.h"
+#include "ChunkManager.h"
+#include <cstdio>
+#include "InputManager.h"
+
+
+namespace MainGameLoop
+{
+
+    std::unordered_map<int, std::unique_ptr<renderableObject>> renderableObjects;
+    IsoTileMap *tileMap = nullptr;
+    int initGame(SDL_Renderer *renderer)
+    {
+        // create a tile object, i then what to create a tilemap, then i want to create a camera object for
+        //  moving around the tilemap and also not render the tiles that are not in the camera view
+        printf("Initializing main game...\n");
+        SDL_Color tileColor = {255, 255, 255, 255};
+        chunkManager = ChunkManager();
+        chunkManager.init(renderer);
+        // renderableObjects[3] = std::make_unique<IsoTileMap>(renderer,chunkManager, 0, 0,10,10, 64, 32);
+        // renderableObjects[2] = std::make_unique<IsoTileMap>(renderer,chunkManager, 0, 1,10,10, 64, 32);
+        // renderableObjects[1] = std::make_unique<IsoTileMap>(renderer,chunkManager, 1, 0,10,10, 64, 32);
+        // renderableObjects[0] = std::make_unique<IsoTileMap>(renderer,chunkManager, 1, 1,10,10, 64, 32);
+        return 0;
+    }
+    int MainGameLoop(float deltaTime)
+    {
+
+        StateManager::getInstance()->getCamera()->update(deltaTime);
+
+        return 0;
+    }
+    void RenderGameWorld(SDL_Renderer *renderer)
+    {
+        // Set the draw color for the renderer
+        SDL_SetRenderDrawColor(renderer, 89, 54, 54, 255);
+
+        SDL_RenderClear(renderer);
+        // render textures here
+
+        for (const auto &pair : renderableObjects)
+        {
+            pair.second->render(renderer); // Render each renderable object
+        }
+
+        SDL_RenderPresent(renderer);
+    }
+}
+
+
+source/ChunkManager.h:
+
+#ifndef CHUNKMANAGER_H
+#define CHUNKMANAGER_H
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include "StateManager.h"
+#include "string"
+#include "TileMap.h"
+
+#include <unordered_map>
+
+struct ChunkCoord
+{
+    int x, y;
+    bool isSerialized;
+    bool operator==(const ChunkCoord& coord) const {
+        return x == coord.x && y == coord.y;
+    }
+};
+namespace std {
+    template <>
+    struct hash <ChunkCoord>{
+        std::size_t operator()(const ChunkCoord & coord) const {
+            return std::hash<int>()(coord.x) ^ (std::hash<int>()(coord.y) << 1);
+        }
+    };
+}
+
+
+class ChunkManager
+{
+private:
+    std::unordered_map<ChunkCoord, IsoTileMap> chunks;           // Map to hold chunks by coordinates
+    std::unordered_map<std::string, SDL_Texture*> textureCache; // Cache for textures to avoid reloading
+
+public:
+    ChunkManager() = default;
+    ~ChunkManager() = default;
+
+    void init(SDL_Renderer *renderer);
+    void update(float deltaTime);
+    void render(SDL_Renderer *renderer) const;
+    IsoTileMap *getChunk(ChunkCoord coord);
+    void GenerateChunk(ChunkCoord coord);
+    void saveChunk(ChunkCoord coord);
+    SDL_Texture* getTexture(std::string textureName);
+    IsoTileMap* GetConnectedTileMap(SDL_FPoint origin, SDL_Point direction);
+};
+
+#endif
+
+source/ChunkManager.cpp
+#include "ChunkManager.h"
+
+void ChunkManager::init(SDL_Renderer *renderer)
+{
+    // Initialize the chunk manager, if needed
+    SDL_Log("ChunkManager initialized.");
+    
+    textureCache.reserve(100); // Reserve space for texture cache to avoid frequent reallocations
+    textureCache["default"] = IMG_LoadTexture(renderer, "assets/images/worldTextures/grasstexture1.png");
+}
+void ChunkManager::update(float deltaTime)
+{
+    // Update logic for chunks, if needed
+    SDL_Log("ChunkManager updated with deltaTime: %f", deltaTime);
+}
+void ChunkManager::render(SDL_Renderer *renderer) const
+{
+    // Render logic for chunks, if needed
+    SDL_Log("ChunkManager rendering.");
+}
+IsoTileMap *ChunkManager::getChunk(ChunkCoord coord)
+{
+    // Logic to retrieve a chunk at the specified coordinates
+    SDL_Log("Retrieving chunk at coordinates (%d, %d)", coord.x, coord.y);
+    IsoTileMap *map = &chunks.at(coord); 
+    return map;
+
+}
+void ChunkManager::GenerateChunk(ChunkCoord coord)
+{
+    // Logic to generate a chunk at the specified coordinates
+    SDL_Log("Generating chunk at coordinates (%d, %d)", coord.x, coord.y);
+}
+void ChunkManager::saveChunk(ChunkCoord coord)
+{
+    // Logic to save the chunk to a file or database
+    SDL_Log("Saving chunk at coordinates (%d, %d)", coord.x, coord.y);
+    coord.isSerialized = true; // Mark the chunk as serialized
+}
+SDL_Texture *ChunkManager::getTexture(std::string textureName)
+{
+    return textureCache.at(textureName);
+}
+IsoTileMap *ChunkManager::GetConnectedTileMap(SDL_FPoint origin, SDL_Point direction)
+{
+    return nullptr;
+}
+
+source/TileMap.h:
+
+#ifndef TILEMAP_H
+#define TILEMAP_H
+#include <vector>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include "Tile.h"
+#include <unordered_map>
+#include <string>
+
+struct ChunkCoord;
+class ChunkManager;
+
+class IsoTileMap : public renderableObject
+{
+public:
+    IsoTileMap(SDL_Renderer *renderer, ChunkManager *manager, float x, float y, int width, int height, int tileWidth, int tileHeight);
+    ~IsoTileMap();
+
+    void render(SDL_Renderer *renderer) const override;
+    void update(float deltaTime);
+    void GenerateChunk(int width, int height, int tileWidth, int tileHeight);
+    Tile CreateTile(int x, int y, int elevation, int tileWidth, int tileHeight, SDL_Color color, TILETYPE tType = TILETYPE::EMPTY);
+    void SetTile(int x, int y, const Tile &tile);
+    Tile* GetTile(int x, int y);
+    void ClearTiles();
+
+private:
+    SDL_FPoint origin;
+    int width;
+    int height;
+    int tileWidth;
+    int tileHeight;
+    SDL_FRect tileMapRect; // Rect for the tile map
+    SDL_Renderer *renderer;
+    std::vector<std::vector<Tile>> tileMap; // 2D vector to hold the tile map
+    ChunkManager *chunkManager;
+    ChunkCoord *chunkCoord;
+};
+#endif // TileMap_h
+
+
+
+source/TileMap.cpp:
+#include "TileMap.h"
+#include "ChunkManager.h"
+
+IsoTileMap::IsoTileMap(SDL_Renderer *renderer, ChunkManager *manager, float tilemapX, float tilemapY, int width, int height, int tileWidth, int tileHeight)
+    : renderer(renderer),chunkManager(manager), origin{tilemapX, tilemapY}, width(width), height(height), tileWidth(tileWidth), tileHeight(tileHeight)
+{
+    tileMapRect = {tilemapX, tilemapY, static_cast<float>(width * tileWidth), static_cast<float>(height * tileHeight)};
+    if (!chunkManager->getTexture("default"))
+    {
+        SDL_Log("Failed to load default texture: %s", SDL_GetError());
+    }
+    GenerateChunk(width, height, tileWidth, tileHeight);
+}
+
+IsoTileMap::~IsoTileMap()
+{
+    ClearTiles();
+}
+void IsoTileMap::render(SDL_Renderer *renderer) const
+{
+    if (StateManager::getInstance()->getCamera()->inViewport(tileMapRect))
+    {
+        for (const auto &row : tileMap)
+        {
+            for (const auto &tile : row)
+            {
+                tile.render(renderer);
+            }
+        }
+    }
+}
+void IsoTileMap::update(float deltaTime)
+{
+    // Update logic for the tile map can be added here
+}
+
+void IsoTileMap::GenerateChunk(int width, int height, int tileWidth, int tileHeight)
+{
+    tileMap.resize(height);
+    for (int y = 0; y < height; ++y)
+    {
+        tileMap[y].reserve(width);
+        for (int x = 0; x < width; ++x)
+        {
+            SDL_Color color = {255, 255, 255, 255}; // Default color for tiles
+            SDL_Log("Creating tile at iso position (%f, %f) with size (%d, %d)", (x + origin.x * width), (y + origin.y * height), tileWidth, tileHeight);
+
+            tileMap[y].emplace_back(CreateTile(x + origin.x * width, y + origin.y * height,0, tileWidth, tileHeight, color, TILETYPE::GRASS));
+        }
+    }
+}
+Tile IsoTileMap::CreateTile(int x, int y, int elevation, int tileWidth, int tileHeight, SDL_Color color, TILETYPE tType)
+{
+    float isoX = (x - y) * (tileWidth / 2);
+    float isoY = (x + y) * (tileHeight / 2);
+    Tile newTile = Tile(renderer, (float)isoX, (float)isoY, elevation, (float)tileWidth, (float)tileHeight, chunkManager->getTexture("default"), tType);
+    newTile.setTileConnnections(this, GetTile(x, y - 1), GetTile(x + 1, y), GetTile(x, y + 1), GetTile(x - 1, y));
+
+    SDL_Log("creating tile 2");
+    return newTile;
+}
+void IsoTileMap::SetTile(int x, int y, const Tile &tile)
+{
+    if (x >= 0 && x < tileMap[0].size() && y >= 0 && y < tileMap.size())
+    {
+        tileMap[y][x] = tile;
+    }
+}
+Tile*IsoTileMap::GetTile(int x, int y)
+{
+    if (x >= 0 && x < tileMap.size() && y >= 0 && y < tileMap.size())
+    {
+        return &tileMap[y][x];
+    }
+    SDL_Point direction;
+    if (x < 0)
+    {
+        direction.x = -1;
+    }
+    else if (x > tileMap.size())
+    {
+        direction.x = 1;
+    }
+    if (y < 0)
+    {
+        direction.y = -1;
+    }
+    else if (y > tileMap.size())
+    {
+        direction.y = 1;
+    }
+    if (chunkManager)
+    {
+        //chunkManager->GetConnectedTileMap(origin, direction)->GetTile(width-x,height-y);
+        SDL_Log("trying to connect to separate chunk (%f , %f) to  (%f, %f)" , origin.x, origin.y, direction.x,direction.y);
+        return chunkManager->GetConnectedTileMap(origin, direction)->GetTile(width-x,height-y);
+    
+    }
+    return nullptr;
+}
+void IsoTileMap::ClearTiles()
+{
+    tileMap.clear();
+}
+
+source/Tile.h:
+
+#ifndef TILE_H
+#define TILE_H
+
+#include <SDL3/SDL.h>
+#include <vector>
+#include "Texture2D.h"
+#include "BaseObjects.h"
+
+enum TILEDIRECTION
+{
+    NORTH = 0,
+    EAST,
+    SOUTH,
+    WEST
+};
+
+// Enum for tile types
+enum class TILETYPE
+{
+    GRASS,
+    WATER,
+    SAND,
+    ROCK,
+    FOREST,
+    ROAD,
+    BUILDING,
+    EMPTY // Default type for empty tiles
+};
+class IsoTileMap;
+
+class Tile : public renderableObject
+{
+private:
+    float x, y, width, height;
+    int elevation = 0;
+    SDL_Color colour;
+    Texture2D tileTexture;
+    Texture2D edgeTexture;
+    TILETYPE tType = TILETYPE::EMPTY;    // Default tile type
+    std::vector<Tile *> connectedTiles;  // Array to hold connected tiles (N, E, S, W)
+    IsoTileMap *parentTileMap = nullptr; // Pointer to the parent tile map for context
+
+public:
+    Tile(SDL_Renderer *ren);
+    Tile(SDL_Renderer *ren, float x, float y, float width, float height, SDL_Color color);
+    Tile(SDL_Renderer *ren, float x, float y, int elev, float width, float height, SDL_Texture *txtr, TILETYPE tType);
+    ~Tile();
+    void setTileType(SDL_Renderer *ren, const char *filePath);
+    void setTileConnnections(IsoTileMap *parent, Tile *north, Tile *east, Tile *south, Tile *west);
+
+    void setPosition(float x, float y);
+    int getElevation() const;
+
+    void render(SDL_Renderer *renderer) const override;
+};
+
+#endif // tile_h
+
+source/Tile.cpp
+#include "Tile.h"
+
+Tile::Tile(SDL_Renderer *ren) : x(0), y(0), width(0), height(0), colour({0, 0, 0, 0}), tType(TILETYPE::EMPTY)
+{
+    SDL_Log("Creating (0)Tile at position (%f, %f) with size (%f, %f)", x, y, width, height);
+}
+
+Tile::Tile(SDL_Renderer *ren, float x, float y, float width, float height, SDL_Color color)
+    : x(x), y(y), width(width), height(height), colour(color), tileTexture(ren, "assets/images/worldTextures/grasstexture1.png", x, y, width, height)
+{
+    tileTexture = Texture2D(ren, "assets/images/worldTextures/grasstexture1.png", new SDL_FRect{x, y, width, height});
+    SDL_Log("Creating (1)Tile at position (%f, %f) with size (%f, %f)", x, y, width, height);
+}
+Tile::Tile(SDL_Renderer *ren, float x, float y, int elev, float width, float height, SDL_Texture *txtr, TILETYPE tType)
+    : x(0), y(0), elevation(elev), width(0), height(0), tileTexture(ren, txtr, x, y, width, height), tType(tType)
+{
+    SDL_Log("Creating (2)Tile at position (%f, %f) with size (%f, %f)", x, y, width, height);
+}
+Tile::~Tile()
+{
+    tileTexture.~Texture2D();
+}
+void Tile::setTileType(SDL_Renderer *ren, const char *filePath)
+{
+    tileTexture = Texture2D(ren, filePath, new SDL_FRect{x, y, width, height});
+}
+void Tile::setTileConnnections(IsoTileMap *parent, Tile *north, Tile *east, Tile *south, Tile *west)
+{
+    if (parent)
+        parentTileMap = parent;
+    if (!connectedTiles[NORTH] && north)
+    {
+        connectedTiles.push_back((Tile *)&north);
+        north->setTileConnnections(nullptr, nullptr, nullptr, this, nullptr);
+    }
+    if (!connectedTiles[EAST] && east)
+        connectedTiles.push_back(east);
+    if (!connectedTiles[SOUTH] && south)
+        connectedTiles.push_back(south);
+    if (!connectedTiles[WEST] && west)
+    {
+        connectedTiles.push_back(west);
+        west->setTileConnnections(nullptr, nullptr, this, nullptr, nullptr);
+    }
+}
+
+void Tile::setPosition(float x, float y)
+{
+    this->x = x;
+    this->y = y;
+    tileTexture.destRect_worldSpace.x = x;
+    tileTexture.destRect_worldSpace.y = y - elevation;
+}
+int Tile::getElevation() const
+{
+    return elevation;
+}
+
+void Tile::render(SDL_Renderer *renderer) const
+{
+    if (elevation != 0)
+    {
+    }
+
+    tileTexture.render(renderer);
+}
+
+
+source/Texture2D.h
+
+#ifndef TEXTURE2D_H
+#define TEXTURE2D_H
+// #pragma once
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3_image/SDL_image.h>
+#include "CameraSystem.h"
+#include "StateManager.h"
+
+struct cameraViewStruct{
+    float x,y,w,h;
+
+    
+};
+
+struct Texture2D
+{
+    SDL_Texture *texture;
+    SDL_Renderer *renderer;
+    SDL_FRect destRect_worldSpace;
+    SDL_FPoint center = {0, 0};             // Center for rotation
+    SDL_Color color = {255, 255, 255, 255}; // Default color
+    float angle = 0.0f;
+    bool ownTexture = true; // Flag to indicate if the texture should be destroyed in the destructor
+    CamStruct *camera;
+    
+    void init();
+    Texture2D();
+
+    Texture2D(SDL_Renderer *ren, const char *filePath, SDL_FRect *rect) ;
+
+    Texture2D(SDL_Renderer *ren, const char *filePath, float x, float y, float width, float hight) ;
+
+    Texture2D(SDL_Renderer *ren, SDL_Texture *txtr, float x, float y, float width, float hight);
+
+    ~Texture2D();
+
+    void render() const;
+    void render(SDL_Renderer *ren) const;
+
+    void resize(int width, int height);
+    void Rotate(float angle);
+    void Move(float x, float y);
+    SDL_Point getWorldPosition() const;
+};
+
+#endif // TEXTURE2D_H
+
+source/Texture2D.cpp
+
+#include "Texture2D.h"
+
+
+void Texture2D::init()
+{
+    camera = StateManager::getInstance()->getCamera();
+}
+
+Texture2D::Texture2D()
+{
+    // Default constructor
+    texture = nullptr;
+    renderer = nullptr;
+    destRect_worldSpace = {0, 0, 0, 0};
+    center = {0, 0};
+    angle = 0.0f;
+    SDL_Log("Render texture constructor 0");
+    init();
+}
+
+Texture2D::Texture2D(SDL_Renderer *ren, const char *filePath, SDL_FRect *rect) : renderer(ren), texture(nullptr), destRect_worldSpace(*rect)
+{
+    init();
+    texture = IMG_LoadTexture(renderer, filePath);
+    center.x = destRect_worldSpace.w / 2;
+    center.y = destRect_worldSpace.h / 2;
+    if (!texture)
+    {
+        SDL_Log("Could not load texture: %s\n", SDL_GetError());
+    }
+    SDL_Log("Render texture1");
+}
+Texture2D::Texture2D(SDL_Renderer *ren, const char *filePath, float x, float y, float width, float hight) : renderer(ren), texture(nullptr), destRect_worldSpace({x, y, width, hight})
+{
+    init();
+    texture = IMG_LoadTexture(renderer, filePath);
+    center.x = destRect_worldSpace.w / 2;
+    center.y = destRect_worldSpace.h / 2;
+    if (!texture)
+    {
+        SDL_Log("Could not load texture: %s\n", SDL_GetError());
+    }
+    SDL_Log("Render texture2");
+}
+Texture2D::Texture2D(SDL_Renderer *ren, SDL_Texture *txtr, float x, float y, float width, float hight) : renderer(ren), ownTexture(false)
+{
+    init();
+    texture = txtr;
+    destRect_worldSpace = SDL_FRect{x, y, width, hight};
+
+    if (!texture)
+    {
+        SDL_Log("Could not load texture: %s\n", SDL_GetError());
+    }
+    SDL_Log("Render texture3 with texture from pointer %p", texture);
+    if (SDL_GetError() != NULL)
+    {
+        SDL_Log("Texture not loaded (req Render): %s\n", SDL_GetError());
+    }
+
+    center.x = destRect_worldSpace.w / 2;
+    center.y = destRect_worldSpace.h / 2;
+}
+
+Texture2D::~Texture2D()
+{
+    if (texture && ownTexture)
+    {
+        SDL_DestroyTexture(texture);
+    }
+}
+
+void Texture2D::render() const
+{
+    if (texture || renderer)
+    {
+        if (angle != 0.0f)
+        {
+            SDL_RenderTextureRotated(renderer, texture, nullptr, &destRect_worldSpace, angle, &center, SDL_FLIP_NONE);
+        }
+        else
+        {
+            SDL_RenderTexture(renderer, texture, NULL, &destRect_worldSpace);
+        }
+        // SDL_Log("Rendering texture at position (%f, %f) with size (%f, %f)", destRect.x, destRect.y, destRect.w, destRect.h);
+        // if (SDL_GetError() != "")
+        // {
+        //     SDL_Log("Texture not loaded (unreq Render): %s\n", SDL_GetError());
+        // }
+        return;
+    }
+    SDL_Log("Texture not loaded(unreq Ren): %s\n", SDL_GetError());
+}
+void Texture2D::render(SDL_Renderer *ren) const
+{
+    if (!camera->inViewport(destRect_worldSpace))
+    {
+        if (!ren)
+        {
+            SDL_Log("Renderer is null, cannot render texture.");
+            return;
+        }
+    }
+    SDL_FRect screenSpaceRect = camera->getViewport();
+    screenSpaceRect.x += destRect_worldSpace.x * camera->getZoom();
+    screenSpaceRect.y += destRect_worldSpace.y * camera->getZoom();
+    screenSpaceRect.w = destRect_worldSpace.w * camera->getZoom();
+    screenSpaceRect.h = destRect_worldSpace.h * camera->getZoom();
+    if (texture)
+    {
+        if (angle != 0.0f)
+        {
+            SDL_RenderTextureRotated(ren, texture, nullptr, &screenSpaceRect, angle, &center, SDL_FLIP_NONE);
+        }
+        else
+        {
+            SDL_RenderTexture(ren, texture, NULL, &screenSpaceRect);
+        }
+        // SDL_Log("Rendering texture at position (%f, %f) with size (%f, %f)", destRect.x, destRect.y, destRect.w, destRect.h);
+        // if (SDL_GetError() != "")
+        // {
+        //     SDL_Log("Texture not loaded (req Render): %s\n", SDL_GetError());
+        // }
+        // SDL_Log("Rendering texture at position (%f, %f) with size (%f, %f)", destRect.x, destRect.y, destRect.w, destRect.h);
+
+        return;
+    }
+    SDL_Log("Texture not loaded (req Render): %s\n", SDL_GetError());
+}
+
+void Texture2D::resize(int width, int height)
+{
+    if (texture)
+    {
+        SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_LINEAR);
+        destRect_worldSpace.w = width;
+        destRect_worldSpace.h = height;
+    }
+}
+void Texture2D::Rotate(float angle)
+{
+    if (texture)
+    {
+        center = {destRect_worldSpace.w / 2, destRect_worldSpace.h / 2};
+        this->angle = angle;
+    }
+}
+void Texture2D::Move(float x, float y)
+{
+    if (texture)
+    {
+        destRect_worldSpace.x = x;
+        destRect_worldSpace.y = y;
+        center = {destRect_worldSpace.w / 2, destRect_worldSpace.h / 2};
+    }
+}
+SDL_Point Texture2D::getWorldPosition() const
+{
+    return {static_cast<int>(destRect_worldSpace.x + center.x), static_cast<int>(destRect_worldSpace.y + center.y)};
+}
