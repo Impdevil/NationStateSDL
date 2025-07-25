@@ -1,10 +1,15 @@
 #include "ChunkManager.h"
 #include "StateManager.h"
+#include <cmath>
 
 void ChunkManager::init(SDL_Renderer *renderer)
 {
     // Initialize the chunk manager, if needed
     SDL_Log("ChunkManager initialized.");
+    chunkTileSizeX = 64;
+    chunkTileNumberX = 10;
+    chunkTileSizeY = 32;
+    chunkTileNumberY = 10;
 
     textureCache.reserve(100); // Reserve space for texture cache to avoid frequent reallocations
     textureCache["default"] = IMG_LoadTexture(renderer, "assets/images/worldTextures/grasstexture1.png");
@@ -12,17 +17,40 @@ void ChunkManager::init(SDL_Renderer *renderer)
         for (int y = 0-chunkCap/2; y < 0+chunkCap/2; y++)
         {
             ChunkCoord newchunk = {x, y, false};
-            chunks.insert({newchunk, IsoTileMap (renderer, this, x, y, 10, 10, 64, 32)});
+            chunks.insert({newchunk, IsoTileMap (renderer, this, x, y, chunkTileNumberX, chunkTileNumberY, chunkTileSizeX, chunkTileSizeY)});
         }
     }
+    getChunksInView();
 }
 void ChunkManager::update(float deltaTime)
 {
     // Update logic for chunks, if needed
     SDL_Log("ChunkManager updated with deltaTime: %f", deltaTime);
 }
-std::vector<IsoTileMap> GetActiveChunks(SDL_FPoint CameraLocation){
-    
+std::vector<ChunkCoord> ChunkManager::getActiveChunks(SDL_FPoint CameraLocation){
+    return {};
+}
+std::vector<ChunkCoord> ChunkManager::getChunksInView(){
+    std::vector<ChunkCoord> results{};
+    chunkCacheRenders = {};
+    CamStruct* cam = StateManager::getInstance()->getCamera();
+    SDL_FRect viewport = cam->getViewport();
+    int minChunkX = floor(viewport.x/(chunkTileSizeX*chunkTileNumberX));
+    int maxChunkx = ceil((viewport.x + viewport.w)/( chunkTileSizeX*chunkTileNumberX));
+
+    int minChunkY = floor (viewport.y/(chunkTileSizeY*chunkTileNumberY));
+    int maxChunkY = ceil ((viewport.y+viewport.h)/(chunkTileSizeY*chunkTileNumberY));
+
+    for (int cy = minChunkY; cy <= maxChunkY; ++cy)
+        for (int cx =minChunkX; cx <= maxChunkx; ++cx){
+            if (chunks.find({cx,cy}) != chunks.end())
+            {
+                results.push_back({cx,cy});
+                if (std::find(chunkCacheRenders.begin(),chunkCacheRenders.end(),&chunks.at({cx,cy})) == chunkCacheRenders.end())
+                    chunkCacheRenders.push_back(&chunks.at({cx,cy}));
+            }
+        }
+    return results;
 }
 
 

@@ -9,6 +9,7 @@ struct CamStruct
 private:
     float x, y;          // Camera position
     float width, height; // Camera dimensions
+    float margin = 10;
     float zoom;          // Zoom level
     float maxZoom = 2; // Maximum zoom level
     float minZoom = 0.2f; // Minimum zoom level

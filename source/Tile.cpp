@@ -2,19 +2,19 @@
 
 Tile::Tile(SDL_Renderer *ren) : origin{0,0}, isoX(0), isoY(0), width(0), height(0), colour({0, 0, 0, 0}), tType(TILETYPE::EMPTY)
 {
-    SDL_Log("Creating (0)Tile at position (%f, %f) with size (%f, %f)", isoX, isoY , width, height);
+    //SDL_Log("Creating (0)Tile at position (%f, %f) with size (%f, %f)", isoX, isoY , width, height);
 }
 
 Tile::Tile(SDL_Renderer *ren,float x,float y, float isox ,float isoy, float width, float height, SDL_Color color)
     : origin{x,y} ,isoX(isox), isoY(isoy), width(width), height(height), colour(color), tileTexture(ren, "assets/images/worldTextures/grasstexture1.png", x, y, width, height)
 {
     tileTexture = Texture2D(ren, "assets/images/worldTextures/grasstexture1.png", new SDL_FRect{x, y, width, height});
-    SDL_Log("Creating (1)Tile at position (%f, %f) with size (%f, %f)", x, y, width, height);
+    //SDL_Log("Creating (1)Tile at position (%f, %f) with size (%f, %f)", x, y, width, height);
 }
 Tile::Tile(SDL_Renderer *ren,float x,float y, float isox, float isoy, int elev, float width, float height, SDL_Texture *txtr, TILETYPE tType)
     : origin{x,y}, isoX(isox), isoY(isoy), elevation(elev), width(0), height(0), tileTexture(ren, txtr, x, y, width, height), tType(tType)
 {
-    SDL_Log("Creating (2)Tile at position (%f, %f) with size (%f, %f)", x, y, width, height);
+    //SDL_Log("Creating (2)Tile at position (%f, %f) with size (%f, %f)", x, y, width, height);
 }
 Tile::~Tile()
 {

@@ -101,6 +101,7 @@ void Texture2D::render(SDL_Renderer *ren) const
             SDL_Log("Renderer is null, cannot render texture.");
             return;
         }
+        return;
     }
     SDL_FRect screenSpaceRect = camera->getViewport();
     screenSpaceRect.x += destRect_worldSpace.x * camera->getZoom();
@@ -126,7 +127,7 @@ void Texture2D::render(SDL_Renderer *ren) const
 
         return;
     }
-    SDL_Log("Texture not loaded (req Render): %s\n", SDL_GetError());
+    //SDL_Log("Texture not loaded (req Render): %s\n", SDL_GetError());
 }
 
 void Texture2D::resize(int width, int height)

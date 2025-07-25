@@ -19,10 +19,8 @@ namespace MainGameLoop
         SDL_Color tileColor = {255, 255, 255, 255};
         chunkManager = ChunkManager();
         chunkManager.init(renderer);
-        // renderableObjects[3] = std::make_unique<IsoTileMap>(renderer,chunkManager, 0, 0,10,10, 64, 32);
-        // renderableObjects[2] = std::make_unique<IsoTileMap>(renderer,chunkManager, 0, 1,10,10, 64, 32);
-        // renderableObjects[1] = std::make_unique<IsoTileMap>(renderer,chunkManager, 1, 0,10,10, 64, 32);
-        // renderableObjects[0] = std::make_unique<IsoTileMap>(renderer,chunkManager, 1, 1,10,10, 64, 32);
+        auto  chunkCache = chunkManager.getChunkCacheRenders();
+        renderableObjects.insert(renderableObjects.end(),chunkCache.begin(),chunkCache.end());
         return 0;
     }
     int MainGameLoop(float deltaTime)

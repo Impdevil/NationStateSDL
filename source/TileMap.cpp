@@ -44,7 +44,7 @@ void IsoTileMap::GenerateChunk(int width, int height, int tileWidth, int tileHei
         for (int x = 0; x < width; ++x)
         {
             SDL_Color color = {255, 255, 255, 255}; // Default color for tiles
-            SDL_Log("Creating tile at iso position (%f, %f) with size (%d, %d)", (x + origin.x * width), (y + origin.y * height), tileWidth, tileHeight);
+            //SDL_Log("Creating tile at iso position (%f, %f) with size (%d, %d)", (x + origin.x * width), (y + origin.y * height), tileWidth, tileHeight);
 
             tileMap[y].emplace_back(CreateTile(x, y, 0, tileWidth, tileHeight, color, TILETYPE::GRASS));
         }
@@ -62,7 +62,7 @@ Tile IsoTileMap::CreateTile(int x, int y, int elevation, int tileWidth, int tile
     Tile newTile = Tile(renderer, x,y,(float)isoX, (float)isoY, elevation, (float)tileWidth, (float)tileHeight, chunkManager->getTexture("default"), tType);
     newTile.setTileConnnections(this, GetTile(x, y - 1), GetTile(x + 1, y), GetTile(x, y + 1), GetTile(x - 1, y));
 
-    SDL_Log("creating tile 2");
+    //SDL_Log("creating tile 2");
     return newTile;
 }
 void IsoTileMap::SetTile(int x, int y, const Tile &tile)
