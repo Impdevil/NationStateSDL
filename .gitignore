@@ -1,2 +1,3 @@
 blarg
 *.txt
+./bin/*
