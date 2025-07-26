@@ -4,3 +4,5 @@ blarg
 errors.txt
 errors.txt
 bin/main
+bin/main
+.gitignore
