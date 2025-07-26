@@ -2,3 +2,5 @@ blarg
 *.txt
 ./bin/*
 errors.txt
+errors.txt
+bin/main
