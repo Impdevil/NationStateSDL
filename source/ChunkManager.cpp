@@ -13,10 +13,11 @@ void ChunkManager::init(SDL_Renderer *renderer)
 
     textureCache.reserve(100); // Reserve space for texture cache to avoid frequent reallocations
     textureCache["default"] = IMG_LoadTexture(renderer, "assets/images/worldTextures/grasstexture1.png");
-    for (int x = 0-chunkCap/2; x < 0+chunkCap/2; x++){
+    for (int x = 0-chunkCap/2; x <= 0+chunkCap/2; x++){
         for (int y = 0-chunkCap/2; y < 0+chunkCap/2; y++)
         {
             ChunkCoord newchunk = {x, y, false};
+            
             chunks.insert({newchunk, IsoTileMap (renderer, this, x, y, chunkTileNumberX, chunkTileNumberY, chunkTileSizeX, chunkTileSizeY)});
         }
     }
@@ -46,8 +47,8 @@ std::vector<ChunkCoord> ChunkManager::getChunksInView(){
             if (chunks.find({cx,cy}) != chunks.end())
             {
                 results.push_back({cx,cy});
-                if (std::find(chunkCacheRenders.begin(),chunkCacheRenders.end(),&chunks.at({cx,cy})) == chunkCacheRenders.end())
-                    chunkCacheRenders.push_back(&chunks.at({cx,cy}));
+                //if (std::find(chunkCacheRenders.begin(),chunkCacheRenders.end(),&chunks.at({cx,cy})) == chunkCacheRenders.end())
+                chunkCacheRenders.push_back(&chunks.at({cx,cy}));
             }
         }
     return results;

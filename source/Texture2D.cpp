@@ -41,7 +41,7 @@ Texture2D::Texture2D(SDL_Renderer *ren, const char *filePath, float x, float y, 
     {
         SDL_Log("Could not load texture: %s\n", SDL_GetError());
     }
-    SDL_Log("Render texture2");
+    //SDL_Log("Render texture2");
 }
 Texture2D::Texture2D(SDL_Renderer *ren, SDL_Texture *txtr, float x, float y, float width, float hight) : renderer(ren), ownTexture(false)
 {
@@ -53,11 +53,7 @@ Texture2D::Texture2D(SDL_Renderer *ren, SDL_Texture *txtr, float x, float y, flo
     {
         SDL_Log("Could not load texture: %s\n", SDL_GetError());
     }
-    SDL_Log("Render texture3 with texture from pointer %p", texture);
-    if (SDL_GetError() != NULL)
-    {
-        SDL_Log("Texture not loaded (req Render): %s\n", SDL_GetError());
-    }
+    //SDL_Log("Render texture3 with texture from pointer %p", texture);
 
     center.x = destRect_worldSpace.w / 2;
     center.y = destRect_worldSpace.h / 2;
@@ -108,6 +104,7 @@ void Texture2D::render(SDL_Renderer *ren) const
     screenSpaceRect.y += destRect_worldSpace.y * camera->getZoom();
     screenSpaceRect.w = destRect_worldSpace.w * camera->getZoom();
     screenSpaceRect.h = destRect_worldSpace.h * camera->getZoom();
+    //SDL_Log("screnen rect: x %f, y %f, w %f, h%f", screenSpaceRect.x,screenSpaceRect.y,screenSpaceRect.w,screenSpaceRect.h);
     if (texture)
     {
         if (angle != 0.0f)

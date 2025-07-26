@@ -24,11 +24,11 @@ float CamStruct::getZoom() const
 bool CamStruct::inViewport(const SDL_FRect &rect) const
 {
     // Check if the rectangle is within the camera viewport
-    return (rect.x + rect.w > x && rect.x < x + width * zoom + margin||
-            rect.y + rect.h > y && rect.y < y + height * zoom + margin);
+    return (rect.x + rect.w > x || rect.x < x + width * zoom||
+            rect.y + rect.h > y || rect.y < y + height * zoom);
 }
 SDL_FRect CamStruct::getViewport() const{
-    return {x,y,width*zoom+ margin, height*zoom+ margin};
+    return {x,y,width*zoom, height*zoom};
 }
 SDL_Point CamStruct::ScreenToWorld(const SDL_Point &screenPoint) const
 {

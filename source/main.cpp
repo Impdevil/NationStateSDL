@@ -36,16 +36,16 @@ int main(int argc, char *argv[])
     inputManager->initButton();
     stateManager.getGameStateManager()->setState(GAME_STATE_MENU);
     stateManager.getGameStateManager()->moveToState(GAME_STATE_PLAYING, renderer);
-
     static Uint64 lastCounter = SDL_GetTicks();
     Uint64 currentCounter = SDL_GetTicks();
+
 
     bool running = true;
     int i = 0;
     while (inputManager->Running)
     {
-
-        float deltaTime = (currentCounter - lastCounter) / 1000.0f; // seconds
+        currentCounter = SDL_GetTicks();
+        float deltaTime = (currentCounter - lastCounter); // Milliseconds
         lastCounter = currentCounter;
         //SDL_Log("Delta Time: %f seconds", deltaTime);
         inputManager->ProcessInput();

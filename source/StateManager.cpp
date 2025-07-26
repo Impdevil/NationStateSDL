@@ -37,6 +37,7 @@ void GameStateManager::moveToState(GameState newState, SDL_Renderer *renderer)
 }
 void GameStateManager::gameLoop(float deltaTime)
 {
+
     // Main game loop logic based on the current state
     switch (currentState)
     {
@@ -73,14 +74,15 @@ void GameStateManager::render(SDL_Renderer *renderer)
         // Render game over screen
         break;
     }
+
 }
+
 
 #pragma endregion GameStateManager Implementation
 
-#pragma region  StateManager Implementation
+#pragma region StateManager Implementation
 
-
-    StateManager* StateManager::instance = nullptr;
+StateManager *StateManager::instance = nullptr;
 
 StateManager *StateManager::getInstance()
 {
@@ -108,5 +110,3 @@ CamStruct *StateManager::getCamera()
 }
 
 #pragma endregion StateManager Implementation
-
-

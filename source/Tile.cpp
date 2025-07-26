@@ -12,7 +12,7 @@ Tile::Tile(SDL_Renderer *ren,float x,float y, float isox ,float isoy, float widt
     //SDL_Log("Creating (1)Tile at position (%f, %f) with size (%f, %f)", x, y, width, height);
 }
 Tile::Tile(SDL_Renderer *ren,float x,float y, float isox, float isoy, int elev, float width, float height, SDL_Texture *txtr, TILETYPE tType)
-    : origin{x,y}, isoX(isox), isoY(isoy), elevation(elev), width(0), height(0), tileTexture(ren, txtr, x, y, width, height), tType(tType)
+    : origin{isox,isoy}, isoX(isox), isoY(isoy), elevation(elev), width(0), height(0), tileTexture(ren, txtr, isox, isoy, width, height), tType(tType)
 {
     //SDL_Log("Creating (2)Tile at position (%f, %f) with size (%f, %f)", x, y, width, height);
 }
@@ -48,8 +48,8 @@ void Tile::setPosition(float x, float y)
 {
     this->isoX = x;
     this->isoY = y;
-    tileTexture.destRect_worldSpace.x = x;
-    tileTexture.destRect_worldSpace.y = y - elevation;
+    tileTexture.destRect_worldSpace.x = isoY;
+    tileTexture.destRect_worldSpace.y = isoY - elevation;
 }
 int Tile::getElevation() const
 {
@@ -58,9 +58,9 @@ int Tile::getElevation() const
 
 void Tile::render(SDL_Renderer *renderer) const
 {
-    if (elevation != 0)
-    {
-    }
+    // if (elevation != 0)
+    // {
+    // }
 
     tileTexture.render(renderer);
 }

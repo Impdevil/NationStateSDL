@@ -4,8 +4,17 @@
 
 IsoTileMap::IsoTileMap(SDL_Renderer *renderer, ChunkManager *manager, float tilemapX, float tilemapY, int width, int height, int tileWidth, int tileHeight)
     : renderer(renderer), chunkManager(manager), origin{tilemapX, tilemapY}, width(width), height(height), tileWidth(tileWidth), tileHeight(tileHeight)
-{
-    tileMapRect = {tilemapX, tilemapY, static_cast<float>(width * tileWidth), static_cast<float>(height * tileHeight)};
+{   //-5*10*64 
+    float chunkwidth = width*tileWidth;
+    float chunkHeight = height*tileHeight;
+    float isoX = (tilemapX - tilemapY) * (chunkwidth / 2);
+    float isoY = (tilemapX + tilemapY) * (chunkHeight / 2);
+
+    float shiftedX = isoX + origin.x;
+    float shiftedY = isoY + origin.y;
+
+    origin = {shiftedX, shiftedY};
+    tileMapRect = {origin.x, origin.y, chunkwidth, chunkHeight};
     if (!chunkManager->getTexture("default"))
     {
         SDL_Log("Failed to load default texture: %s", SDL_GetError());
@@ -19,8 +28,9 @@ IsoTileMap::~IsoTileMap()
 }
 void IsoTileMap::render(SDL_Renderer *renderer) const
 {
-    if (StateManager::getInstance()->getCamera()->inViewport(tileMapRect))
-    {
+    //SDL_Log("potaot");
+    //if (StateManager::getInstance()->getCamera()->inViewport(tileMapRect))
+    //{
         for (const auto &row : tileMap)
         {
             for (const auto &tile : row)
@@ -28,7 +38,7 @@ void IsoTileMap::render(SDL_Renderer *renderer) const
                 tile.render(renderer);
             }
         }
-    }
+    //}
 }
 void IsoTileMap::update(float deltaTime)
 {
@@ -38,29 +48,30 @@ void IsoTileMap::update(float deltaTime)
 void IsoTileMap::GenerateChunk(int width, int height, int tileWidth, int tileHeight)
 {
     tileMap.resize(height);
-    for (int y = 0; y < height; ++y)
+    for (int offsetTileY = 0; offsetTileY < height; ++offsetTileY)
     {
-        tileMap[y].reserve(width);
-        for (int x = 0; x < width; ++x)
+        tileMap[offsetTileY].reserve(width);
+        for (int offsetTileX = 0; offsetTileX < width; ++offsetTileX)
         {
             SDL_Color color = {255, 255, 255, 255}; // Default color for tiles
             //SDL_Log("Creating tile at iso position (%f, %f) with size (%d, %d)", (x + origin.x * width), (y + origin.y * height), tileWidth, tileHeight);
 
-            tileMap[y].emplace_back(CreateTile(x, y, 0, tileWidth, tileHeight, color, TILETYPE::GRASS));
+            tileMap[offsetTileY].emplace_back(CreateTile(offsetTileX, offsetTileY, 0, tileWidth, tileHeight, color, TILETYPE::GRASS));
         }
     }
 }
 
-// TODO:::::
-// change the get tile to get the actual tile location not the shifted pixel position
-Tile IsoTileMap::CreateTile(int x, int y, int elevation, int tileWidth, int tileHeight, SDL_Color color, TILETYPE tType)
+
+Tile IsoTileMap::CreateTile(int offsetTileX, int offsetTileY, int elevation, int tileWidth, int tileHeight, SDL_Color color, TILETYPE tType)
 {
-    float shiftedX = x + origin.x * width;
-    float shiftedY = y + origin.y * height;
-    float isoX = (shiftedX - shiftedY) * (tileWidth / 2);
-    float isoY = (shiftedX + shiftedY) * (tileHeight / 2);
-    Tile newTile = Tile(renderer, x,y,(float)isoX, (float)isoY, elevation, (float)tileWidth, (float)tileHeight, chunkManager->getTexture("default"), tType);
-    newTile.setTileConnnections(this, GetTile(x, y - 1), GetTile(x + 1, y), GetTile(x, y + 1), GetTile(x - 1, y));
+
+    float isoX = (offsetTileX - offsetTileY) * (tileWidth / 2);
+    float isoY = (offsetTileX + offsetTileY) * (tileHeight / 2);
+
+    float shiftedX = isoX + origin.x;
+    float shiftedY = isoY + origin.y;
+    Tile newTile = Tile(renderer, offsetTileX,offsetTileY,(float)shiftedX, (float)shiftedY, elevation, (float)tileWidth, (float)tileHeight, chunkManager->getTexture("default"), tType);
+    newTile.setTileConnnections(this, GetTile(offsetTileX, offsetTileY - 1), GetTile(offsetTileX + 1, offsetTileY), GetTile(offsetTileX, offsetTileY + 1), GetTile(offsetTileX - 1, offsetTileY));
 
     //SDL_Log("creating tile 2");
     return newTile;
@@ -76,7 +87,7 @@ Tile *IsoTileMap::GetTile(int x, int y)
 {
     if (y >= 0 && y < tileMap.size() && x >= 0 && x < tileMap[y].size())
     {
-        SDL_Log("Tile found");
+        //SDL_Log("Tile found");
         return &tileMap[y][x];
     }
     SDL_Point direction;
@@ -99,7 +110,7 @@ Tile *IsoTileMap::GetTile(int x, int y)
     if (chunkManager)
     {
         // chunkManager->GetConnectedTileMap(origin, direction)->GetTile(width-x,height-y);
-        SDL_Log("trying to connect to separate chunk (%f , %f) to  (%f, %f)", origin.x, origin.y, direction.x, direction.y);
+        //SDL_Log("trying to connect to separate chunk (%f , %f) to  (%f, %f)", origin.x, origin.y, direction.x, direction.y);
         IsoTileMap *ConnectedChunk = chunkManager->GetConnectedTileMap(origin, direction);
         if (ConnectedChunk)
         {
@@ -108,7 +119,7 @@ Tile *IsoTileMap::GetTile(int x, int y)
                 return connectedTile;
         }
     }
-    SDL_Log("Connected Tile does not exist");
+    //SDL_Log("Connected Tile does not exist");
     return nullptr;
 }
 void IsoTileMap::ClearTiles()

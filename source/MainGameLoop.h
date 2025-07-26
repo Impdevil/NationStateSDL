@@ -15,6 +15,8 @@ namespace MainGameLoop
     int initGame(SDL_Renderer *renderer);
     int MainGameLoop(float deltaTime);
     void RenderGameWorld(SDL_Renderer *renderer);
+    void updateTileRenderCache(float deltaTime);
+    void clearRenderStream();
 }
 
 #endif // MainGameLoop_h
