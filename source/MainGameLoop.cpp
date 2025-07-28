@@ -4,16 +4,24 @@
 #include "StateManager.h"
 #include <cstdio>
 #include "InputManager.h"
+#include "DebugTextDisplay.h"
 
 
 namespace MainGameLoop
-{
+{   
+    DebugTextSingleLine debugCameraDisplay;
     ChunkManager chunkManager;
     std::vector<renderableObject*> renderableObjects = {};
     IsoTileMap *tileMap = nullptr;
     float tileRenderUpdateTimer;
     int initGame(SDL_Renderer *renderer)
     {
+        debugCameraDisplay = DebugTextSingleLine(renderer,false,2,2,StateManager::getInstance()->getGameStateManager()->getDebugFont());
+        debugCameraDisplay.addPropertyFRect("Camera pos", []() -> SDL_FRect {
+            return StateManager::getInstance()->getCamera()->getViewport();
+        });
+        debugCameraDisplay.updateProperties();
+        StateManager::getInstance()->getGameStateManager()->debugDisplays.emplace_back(&debugCameraDisplay);
         // create a tile object, i then what to create a tilemap, then i want to create a camera object for
         //  moving around the tilemap and also not render the tiles that are not in the camera view
         printf("Initializing main game...\n");
@@ -39,23 +47,17 @@ namespace MainGameLoop
     {  
 
         // Set the draw color for the renderer
-        SDL_SetRenderDrawColor(renderer, 89, 54, 54, 255);
 
-        SDL_RenderClear(renderer);
         // render textures here
-        int i= 0;
         for (auto &objectToRender : renderableObjects)
         {
-            ++i;
             objectToRender->render(renderer); // Render each renderable object
-            //SDL_Log("loops = %d ", i);
         }
         
-        SDL_RenderPresent(renderer);
     }
     void updateTileRenderCache(float deltaTime){
         tileRenderUpdateTimer += deltaTime;
-        if (tileRenderUpdateTimer >= 16){
+        if (tileRenderUpdateTimer >= 3000){
             clearRenderStream();
             tileRenderUpdateTimer = 0;
             chunkManager.getChunksInView();

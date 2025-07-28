@@ -1,6 +1,7 @@
 blarg
 *.txt
 bin/*
+bin/*/*.*
 errors.txt
 errors.txt
 bin/main

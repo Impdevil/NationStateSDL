@@ -6,6 +6,7 @@
 #include "Tile.h"
 #include <unordered_map>
 #include <string>
+#include "TextDisplay.h"
 
 struct ChunkCoord;
 class ChunkManager;

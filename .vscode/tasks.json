@@ -11,7 +11,8 @@
                 "-o",
                 "${workspaceFolder}/bin/main",
                 "-lSDL3",
-                "-lSDL3_image"
+                "-lSDL3_image",
+                "-lSDL3_ttf"
             ],
             "group": "build",
             "problemMatcher": [

@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <cstdio>
 #include <unistd.h>
 #include "StateManager.h"
@@ -26,6 +27,14 @@ int main(int argc, char *argv[])
     if (!renderer)
     {
         printf("Could not create renderer: %s", SDL_GetError());
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
+    if (TTF_Init() != true)
+    {
+        printf("Could not initialize TTF: %s", SDL_GetError());
+        SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
         return 1;

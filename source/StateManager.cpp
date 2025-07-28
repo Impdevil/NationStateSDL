@@ -4,6 +4,19 @@
 
 #pragma region GameStateManager Implementation
 
+GameStateManager::GameStateManager() : currentState(GAME_STATE_MENU)
+{
+    debugFont = TTF_OpenFont("assets/fonts/A25-SQUANOVA.ttf", 12);
+    if (!debugFont)
+    {
+        SDL_Log("Failed to load debug font: %s", SDL_GetError());
+    }
+}
+TTF_Font *GameStateManager::getDebugFont()
+{
+    return debugFont;
+}
+
 void GameStateManager::setState(GameState newState)
 {
     currentState = newState;
@@ -37,7 +50,11 @@ void GameStateManager::moveToState(GameState newState, SDL_Renderer *renderer)
 }
 void GameStateManager::gameLoop(float deltaTime)
 {
-
+    // update debug displays
+    for (auto &debugDisplay : debugDisplays)
+    {
+        debugDisplay->updateProperties();
+    }
     // Main game loop logic based on the current state
     switch (currentState)
     {
@@ -58,6 +75,9 @@ void GameStateManager::gameLoop(float deltaTime)
 
 void GameStateManager::render(SDL_Renderer *renderer)
 {
+    SDL_SetRenderDrawColor(renderer, 89, 54, 54, 255);
+
+    SDL_RenderClear(renderer);
     // Render based on the current state
     switch (currentState)
     {
@@ -74,9 +94,12 @@ void GameStateManager::render(SDL_Renderer *renderer)
         // Render game over screen
         break;
     }
-
+    for (auto &debugDisplay : debugDisplays)
+    {
+        debugDisplay->render(renderer);
+    }
+    SDL_RenderPresent(renderer);
 }
-
 
 #pragma endregion GameStateManager Implementation
 

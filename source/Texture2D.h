@@ -7,11 +7,6 @@
 #include <SDL3_image/SDL_image.h>
 #include "CameraSystem.h"
 
-struct cameraViewStruct{
-    float x,y,w,h;
-
-    
-};
 
 struct Texture2D
 {
