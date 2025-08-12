@@ -100,7 +100,8 @@ void DebugTextMultiLine::updateProperties()
     for (auto &val : properties)
     {
         buildString += val.createString();
-        buildString += "\n";
+        //buildString += "\n";
+        buildString += " || ";
     }
     textDisplay.updateLabelText(buildString);
 }

@@ -40,7 +40,7 @@ struct propertyHolder
                 return " unable to set.";
             } }, val);
 
-        return "" + displayText + builtString;
+        return "" + displayText +" "+ builtString;
     }
 };
 

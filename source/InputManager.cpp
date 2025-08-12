@@ -28,6 +28,8 @@ void InputManager::initButton()
 }
 void InputManager::ProcessInput()
 {
+    scrollDirX = SCROLL_NONE;
+    scrollDirY = SCROLL_NONE; // Reset scroll direction at the start of processing
     for (auto &[key, state] : keyboardStates)
     {
         if (state == JUSTPRESSED)
@@ -67,10 +69,49 @@ void InputManager::ProcessInput()
         }
         if (event.type == SDL_EVENT_MOUSE_WHEEL)
         {
-            mouseWheelX += event.wheel.x;
-            mouseWheelY += event.wheel.y;
+            int tempMouseWheelX = mouseWheelX;
+            tempMouseWheelX += event.wheel.x;
+            int tempMouseWheelY = mouseWheelY; 
+            tempMouseWheelY += event.wheel.y;
+            if (tempMouseWheelY != mouseWheelY)
+            {
+                mouseWheelX = tempMouseWheelX;
+                mouseWheelY = tempMouseWheelY;
+                // Update scroll direction
+                if (event.wheel.y > 0)
+                {
+                    scrollDirY = SCROLL_UP;
+                }
+                else if (event.wheel.y < 0)
+                {
+                    scrollDirY = SCROLL_DOWN;
+                }
+            }
+            else
+            {
+                scrollDirY = SCROLL_NONE; // Reset scroll direction if no change
+            }
+            if (tempMouseWheelX != mouseWheelX)
+            {
+                mouseWheelX = tempMouseWheelX;
+                // Update scroll direction
+                if (event.wheel.x > 0)
+                {
+                    scrollDirX = SCROLL_UP;
+                }
+                else if (event.wheel.x < 0)
+                {
+                    scrollDirX = SCROLL_DOWN;
+                }
+            }
+            else
+            {
+                scrollDirX = SCROLL_NONE; // Reset scroll direction if no change
+            }
+
         }
     }
+
     float x, y = 0.0f;
     SDL_GetMouseState(&x, &y);
     mouseX = x;

@@ -1,7 +1,6 @@
 #include "ChunkManager.h"
 #include "StateManager.h"
 #include <cmath>
-
 void ChunkManager::init(SDL_Renderer *renderer)
 {
     // Initialize the chunk manager, if needed
@@ -13,12 +12,13 @@ void ChunkManager::init(SDL_Renderer *renderer)
 
     textureCache.reserve(100); // Reserve space for texture cache to avoid frequent reallocations
     textureCache["default"] = IMG_LoadTexture(renderer, "assets/images/worldTextures/grasstexture1.png");
-    for (int x = 0-chunkCap/2; x <= 0+chunkCap/2; x++){
-        for (int y = 0-chunkCap/2; y < 0+chunkCap/2; y++)
+    for (int x = 0 - chunkCap / 2; x <= 0 + chunkCap / 2; x++)
+    {
+        for (int y = 0 - chunkCap / 2; y < 0 + chunkCap / 2; y++)
         {
             ChunkCoord newchunk = {x, y, false};
-            
-            chunks.insert({newchunk, IsoTileMap (renderer, this, x, y, chunkTileNumberX, chunkTileNumberY, chunkTileSizeX, chunkTileSizeY)});
+
+            chunks.insert({newchunk, IsoTileMap(renderer, this, x, y, chunkTileNumberX, chunkTileNumberY, chunkTileSizeX, chunkTileSizeY)});
         }
     }
     getChunksInView();
@@ -28,32 +28,56 @@ void ChunkManager::update(float deltaTime)
     // Update logic for chunks, if needed
     SDL_Log("ChunkManager updated with deltaTime: %f", deltaTime);
 }
-std::vector<ChunkCoord> ChunkManager::getActiveChunks(SDL_FPoint CameraLocation){
+std::vector<ChunkCoord> ChunkManager::getActiveChunks(SDL_FPoint CameraLocation)
+{
     return {};
 }
-std::vector<ChunkCoord> ChunkManager::getChunksInView(){
+std::vector<ChunkCoord> ChunkManager::getChunksInView()
+{
     std::vector<ChunkCoord> results{};
-    chunkCacheRenders = {};
-    CamStruct* cam = StateManager::getInstance()->getCamera();
+    chunkCacheRenders.clear();
+    CamStruct *cam = StateManager::getInstance()->getCamera();
     SDL_FRect viewport = cam->getViewport();
-    int minChunkX = floor(viewport.x/(chunkTileSizeX*chunkTileNumberX));
-    int maxChunkx = ceil((viewport.x + viewport.w)/( chunkTileSizeX*chunkTileNumberX));
 
-    int minChunkY = floor (viewport.y/(chunkTileSizeY*chunkTileNumberY));
-    int maxChunkY = ceil ((viewport.y+viewport.h)/(chunkTileSizeY*chunkTileNumberY));
+    float chunkWidth = (chunkTileSizeX * chunkTileNumberX) / 2;
+    float chunkHeight = (chunkTileSizeY * chunkTileNumberY) / 2;
 
-    for (int cy = minChunkY; cy <= maxChunkY; ++cy)
-        for (int cx =minChunkX; cx <= maxChunkx; ++cx){
-            if (chunks.find({cx,cy}) != chunks.end())
+    // Top-left and bottom-right screen points
+    SDL_FPoint topLeft = {viewport.x, viewport.y};
+    SDL_FPoint bottomRight = {viewport.x + viewport.w, viewport.y + viewport.h};
+
+
+    // Estimate tile range (rough inverse of projection)
+    int txMin = floor((topLeft.x / (chunkWidth) + topLeft.y / (chunkHeight)) / 2) - 5;
+    int tyMin = floor((-topLeft.x / (chunkWidth) + topLeft.y / (chunkHeight)) / 2) - 5;
+
+    int txMax = ceil((bottomRight.x / (chunkWidth) + bottomRight.y / (chunkHeight)) / 2) + 2;
+    int tyMax = ceil((-bottomRight.x / (chunkWidth) + bottomRight.y / (chunkHeight)) / 2) + 2;
+
+    for (int tx = txMin; tx <= txMax; ++tx)
+    {
+        for (int ty = tyMin; ty <= tyMax; ++ty)
+        {
+            if (chunks.find({tx, ty}) == chunks.end())
             {
-                results.push_back({cx,cy});
-                //if (std::find(chunkCacheRenders.begin(),chunkCacheRenders.end(),&chunks.at({cx,cy})) == chunkCacheRenders.end())
-                chunkCacheRenders.push_back(&chunks.at({cx,cy}));
+                continue; // Skip if chunk does not exist
+            }
+            float sx = (tx - ty) * (chunkWidth);
+            float sy = (tx + ty) * (chunkHeight);
+            SDL_FRect tileRect = {sx - chunkWidth, sy, chunkWidth * 2 + 20, chunkHeight * 2};
+
+            if (SDL_HasRectIntersectionFloat(&tileRect, &viewport))
+            {
+
+                results.push_back({static_cast<int>(sx), static_cast<int>(sy)});
+                // if (std::find(chunkCacheRenders.begin(),chunkCacheRenders.end(),&chunks.at({cx,cy})) == chunkCacheRenders.end())
+                chunkCacheRenders.push_back(&chunks.at({static_cast<int>(tx), static_cast<int>(ty)}));
             }
         }
+    }
+
     return results;
 }
-
 
 IsoTileMap *ChunkManager::getChunk(ChunkCoord coord)
 {
@@ -81,4 +105,3 @@ IsoTileMap *ChunkManager::GetConnectedTileMap(SDL_FPoint origin, SDL_Point direc
 {
     return nullptr;
 }
-

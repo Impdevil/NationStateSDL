@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("SDL3 Window", 800, 600, 0);
+    SDL_Window *window = SDL_CreateWindow("711 was a part time job", 800, 600, 0);
     if (!window)
     {
         printf("Could not create window: %s", SDL_GetError());

@@ -15,7 +15,7 @@ Texture2D::Texture2D()
     destRect_worldSpace = {0, 0, 0, 0};
     center = {0, 0};
     angle = 0.0f;
-    SDL_Log("Render texture constructor 0");
+    //SDL_Log("Render texture constructor 0");
     init();
 }
 
@@ -100,7 +100,9 @@ void Texture2D::render(SDL_Renderer *ren) const
         return;
     }
     SDL_FRect screenSpaceRect = camera->getViewport();
-    screenSpaceRect.x += destRect_worldSpace.x * camera->getZoom();
+    screenSpaceRect.x *= -1;
+    screenSpaceRect.y *= -1;
+    screenSpaceRect.x += destRect_worldSpace.x * camera->getZoom() ;
     screenSpaceRect.y += destRect_worldSpace.y * camera->getZoom();
     screenSpaceRect.w = destRect_worldSpace.w * camera->getZoom();
     screenSpaceRect.h = destRect_worldSpace.h * camera->getZoom();

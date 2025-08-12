@@ -6,7 +6,7 @@
 #include "Tile.h"
 #include <unordered_map>
 #include <string>
-#include "TextDisplay.h"
+#include "DebugTextDisplay.h"
 
 struct ChunkCoord;
 class ChunkManager;
@@ -26,6 +26,7 @@ public:
     void ClearTiles();
 
 private:
+    DebugTextMultiLine debugTileMapDisplay;
     SDL_FPoint origin;
     int width;
     int height;

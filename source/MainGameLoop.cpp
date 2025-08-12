@@ -21,9 +21,9 @@ namespace MainGameLoop
             return StateManager::getInstance()->getCamera()->getViewport();
         });
         debugCameraDisplay.updateProperties();
-        StateManager::getInstance()->getGameStateManager()->debugDisplays.emplace_back(&debugCameraDisplay);
+        StateManager::getInstance()->getGameStateManager()->debugDisplays.emplace_back(std::make_unique<DebugTextSingleLine>(debugCameraDisplay));
         // create a tile object, i then what to create a tilemap, then i want to create a camera object for
-        //  moving around the tilemap and also not render the tiles that are not in the camera view
+        // moving around the tilemap and also not render the tiles that are not in the camera view
         printf("Initializing main game...\n");
         SDL_Color tileColor = {255, 255, 255, 255};
         chunkManager = ChunkManager();
@@ -57,7 +57,7 @@ namespace MainGameLoop
     }
     void updateTileRenderCache(float deltaTime){
         tileRenderUpdateTimer += deltaTime;
-        if (tileRenderUpdateTimer >= 3000){
+        if (tileRenderUpdateTimer >= 30){
             clearRenderStream();
             tileRenderUpdateTimer = 0;
             chunkManager.getChunksInView();

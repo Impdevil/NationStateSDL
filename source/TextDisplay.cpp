@@ -28,6 +28,24 @@ TextDisplay::~TextDisplay()
 }
 void TextDisplay::updateLabelText(std::string newText)
 {
+    if (worldSpaceText)
+    {
+        if (camera->inViewport(textRect))
+        {
+            label = newText;
+            SDL_DestroyTexture(textTexture);
+            textTexture = nullptr;
+
+            textRect = {origin.x, origin.y, 0, 0};
+            surface = TTF_RenderText_Solid(displayFont, label.c_str(), 0, textColour);
+            textTexture = SDL_CreateTextureFromSurface(renderer, surface);
+
+            textRect.w = surface->w;
+            textRect.h = surface->h;
+            SDL_DestroySurface(surface);
+        }
+        return;
+    }
     label = newText;
     SDL_DestroyTexture(textTexture);
     textTexture = nullptr;
@@ -47,6 +65,8 @@ void TextDisplay::render(SDL_Renderer *ren) const
         if (!camera->inViewport(textRect))
             return;
         SDL_FRect screenSpaceRect = camera->getViewport();
+        screenSpaceRect.x *= -1;
+        screenSpaceRect.y *= -1;
         screenSpaceRect.x += textRect.x * camera->getZoom();
         screenSpaceRect.y += textRect.y * camera->getZoom();
         screenSpaceRect.w = textRect.w * camera->getZoom();

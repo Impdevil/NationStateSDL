@@ -28,7 +28,7 @@ namespace std {
 class ChunkManager
 {
 private:
-    int chunkCap = 10;
+    int chunkCap = 30;
     std::unordered_map<ChunkCoord, IsoTileMap> chunks;           // Map to hold chunks by coordinates
     std::unordered_map<std::string, SDL_Texture*> textureCache; // Cache for textures to avoid reloading
     int chunkTileSizeX, chunkTileSizeY, chunkTileNumberX, chunkTileNumberY;

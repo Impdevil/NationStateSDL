@@ -7,3 +7,4 @@ errors.txt
 bin/main
 bin/main
 .gitignore
+*.png

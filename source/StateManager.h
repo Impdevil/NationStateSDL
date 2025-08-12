@@ -8,6 +8,7 @@
 #include <vector>
 #include "CameraSystem.h"
 #include "DebugTextDisplay.h"
+#include <memory>
 
 enum GameState
 {
@@ -21,7 +22,7 @@ class GameStateManager
 {
 public:
     bool debugMode = true;
-    std::vector<DebugsDisplay*>  debugDisplays;
+    std::vector<std::unique_ptr<DebugsDisplay>>  debugDisplays;
     
     GameStateManager();
     void setState(GameState newState);
